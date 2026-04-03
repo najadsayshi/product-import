@@ -8,7 +8,17 @@ import os
 from app.db import engine
 from app.models import Product
 import uuid
+from celery.result import AsyncResult
 app = FastAPI()
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+    allow_credentials=False,
+)
 
 @app.get("/")
 def root():
@@ -36,7 +46,7 @@ async def create_upload_file(
 
     #SEND ONLY PATH
     task = process_csv_file.delay(file_path)
-
+    print(f"task id: {task.id}")
     return {
         "message": "file is being processed",
         "task_id": task.id
@@ -56,31 +66,104 @@ celery.conf.update(
     redis_backend_use_ssl={"ssl_cert_reqs": "none"},
 )
 
-@celery.task
-def process_csv_file(file_path):
-    products = []
 
+@celery.task(bind=True)
+def process_csv_file(self, file_path):
+    batch_size = 1000
+    batch = []
+    inserted = 0
+
+    
+    total = 0
     with open(file_path, "r") as f:
-        reader = csv.DictReader(f)
+        for _ in f:
+            total += 1
 
-        for row in reader:
-            try:
-                product = Product(
-                    sku=row["sku"],
-                    name=row["name"],
-                    description=row["description"],
-                    price=float(row["price"])
-                )
-                products.append(product)
-
-            except Exception as e:
-                print(f"skipping row {row} because of {e}")
+    total = max(total - 1, 1)  # remove header safely
 
     
     with Session(engine) as db:
-        db.add_all(products)
-        db.commit()
+        with open(file_path, "r") as f:
+            reader = csv.DictReader(f)
 
+            for i, row in enumerate(reader):
+                try:
+                    product = Product(
+                        sku=row["sku"],
+                        name=row["name"],
+                        description=row["description"],
+                        price=float(row["price"])
+                    )
+                    batch.append(product)
+
+                except Exception as e:
+                    print(f"skipping row {row} because of {e}")
+
+                
+                if len(batch) >= batch_size:
+                    db.add_all(batch)
+                    db.commit()
+
+                    inserted += len(batch)
+                    batch.clear()
+
+                
+                if i % 1000 == 0 or i == total - 1:
+                    percent = int((inserted / total) * 100)
+
+                    self.update_state(
+                        state="PROGRESS",
+                        meta={
+                            "stage": "processing",
+                            "current": inserted,
+                            "total": total,
+                            "percent": percent
+                        },
+                    )
+
+        
+        if batch:
+            db.add_all(batch)
+            db.commit()
+            inserted += len(batch)
+
+            self.update_state(
+                state="PROGRESS",
+                meta={
+                    "stage": "finalizing",
+                    "current": inserted,
+                    "total": total,
+                    "percent": 99
+                },
+            )
+
+    # ✅ DONE
     return {
-        "inserted": len(products)
+        "stage": "completed",
+        "inserted": inserted,
+        "percent": 100
     }
+
+
+#progress bar or visibility endpoint
+@app.get("/task/{task_id}")
+def get_progress(task_id: str):
+    task = AsyncResult(task_id, app = celery)
+
+    if task.state == "PENDING":
+        return {"state" : "pending",
+                "percent" : 0}
+    elif task.state == "PROGRESS":
+        return {
+            "state" : "processing",
+            **(task.info or {})
+        }
+    elif task.state == "SUCCESS":
+        return {
+            "state" : "Completed",
+            "percent" : 100,
+            "result" : task.result
+            
+        }
+    
+    return {"state" : task.state}

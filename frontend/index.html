@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Import</title>
+    <meta name="description" content="Upload a CSV file to bulk-import products via background processing.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./styles.css">
+</head>
+
+<body>
+    <div class="layout">
+
+        <header class="top-bar">
+            <span class="logo">product<strong>import</strong></span>
+        </header>
+
+        <main class="content">
+
+            <!-- Upload Card -->
+            <section class="card" id="upload-card">
+                <h1>Import Products</h1>
+                <p class="hint">Upload a <code>.csv</code> file with columns: <code>sku, name, description, price</code>
+                </p>
+
+                <div class="drop-zone" id="drop-zone">
+                    <input type="file" id="file-input" accept=".csv" hidden>
+                    <svg viewBox="0 0 24 24" width="32" height="32" stroke="currentColor" stroke-width="1.5" fill="none"
+                        class="upload-icon">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    <p class="drop-label">Drop your CSV here, or <span class="link" id="browse-link">browse</span></p>
+                    <p class="file-name" id="file-name">No file selected</p>
+                </div>
+
+                <button type="button" class="btn" id="upload-btn" disabled>Upload & Process</button>
+            </section>
+
+            <!-- Progress Card (hidden until upload starts) -->
+            <section class="card hidden" id="progress-card">
+                <div class="status-row">
+                    <span class="status-badge" id="status-badge">pending</span>
+                    <span class="counts" id="counts"></span>
+                </div>
+
+                <div class="progress-track">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+                <p class="percent-label" id="percent-label">0%</p>
+
+                <button type="button" class="btn btn-outline" id="reset-btn">Import another file</button>
+            </section>
+
+        </main>
+
+    </div>
+
+    <script src="./app.js" defer></script>
+</body>
+
+</html>

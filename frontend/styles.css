@@ -1,0 +1,269 @@
+/* ── Variables ─────────────────────────────── */
+:root {
+    --bg: #f4f4f5;
+    --surface: #ffffff;
+    --border: #e4e4e7;
+    --text: #18181b;
+    --text-muted: #71717a;
+    --accent: #18181b;
+    --accent-h: #3f3f46;
+    --success: #16a34a;
+    --error: #dc2626;
+    --progress: #18181b;
+    --radius: 8px;
+    --t: 140ms ease;
+}
+
+/* ── Reset ─────────────────────────────────── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 14px;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+code {
+    font-family: 'Courier New', monospace;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 0.1em 0.4em;
+    font-size: 0.8em;
+    color: var(--text-muted);
+}
+
+/* ── Layout ────────────────────────────────── */
+.layout {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+}
+
+.top-bar {
+    padding: 1rem 1.5rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    font-size: 0.9rem;
+    letter-spacing: -0.01em;
+}
+
+.logo {
+    color: var(--text-muted);
+}
+
+.logo strong {
+    color: var(--text);
+}
+
+.content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    gap: 1rem;
+}
+
+/* ── Card ──────────────────────────────────── */
+.card {
+    width: 100%;
+    max-width: 420px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.card h1 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+}
+
+.hint {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+}
+
+/* ── Drop Zone ─────────────────────────────── */
+.drop-zone {
+    border: 1.5px dashed var(--border);
+    border-radius: var(--radius);
+    padding: 2rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    transition: border-color var(--t), background var(--t);
+    text-align: center;
+}
+
+.drop-zone:hover,
+.drop-zone.drag-over {
+    border-color: var(--accent);
+    background: #f9f9f9;
+}
+
+.upload-icon {
+    opacity: 0.35;
+    margin-bottom: 0.25rem;
+}
+
+.drop-label {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.link {
+    color: var(--text);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.file-name {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.file-name.ready {
+    color: var(--success);
+    font-weight: 500;
+}
+
+/* ── Button ────────────────────────────────── */
+.btn {
+    width: 100%;
+    padding: 0.65rem 1rem;
+    background: var(--accent);
+    color: #fff;
+    border: 1px solid transparent;
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background var(--t);
+}
+
+.btn:hover:not(:disabled) {
+    background: var(--accent-h);
+}
+
+.btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.btn-outline {
+    background: transparent;
+    border-color: var(--border);
+    color: var(--text);
+}
+
+.btn-outline:hover:not(:disabled) {
+    background: var(--bg);
+}
+
+/* ── Progress Card ─────────────────────────── */
+.status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.2em 0.7em;
+    border-radius: 100px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    transition: all var(--t);
+}
+
+.status-badge.processing {
+    background: #fefce8;
+    border-color: #ca8a04;
+    color: #854d0e;
+}
+
+.status-badge.completed {
+    background: #f0fdf4;
+    border-color: #16a34a;
+    color: #15803d;
+}
+
+.status-badge.failed {
+    background: #fef2f2;
+    border-color: #dc2626;
+    color: #b91c1c;
+}
+
+.counts {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.progress-track {
+    height: 5px;
+    background: var(--bg);
+    border-radius: 100px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--progress);
+    border-radius: 100px;
+    transition: width 600ms ease;
+}
+
+.progress-fill.done {
+    background: var(--success);
+}
+
+.progress-fill.failed {
+    background: var(--error);
+}
+
+.percent-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── Utility ───────────────────────────────── */
+.hidden {
+    display: none !important;
+}
