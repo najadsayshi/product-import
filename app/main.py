@@ -2,11 +2,15 @@ from fastapi import FastAPI, UploadFile,File,Depends
 from typing import Annotated
 from app.db import get_session
 from sqlmodel import SQLModel, Session
+from sqlalchemy.exc import IntegrityError
 from io import StringIO
 import csv
 import os
 from app.db import engine
 from app.models import Product
+from dotenv import load_dotenv
+
+load_dotenv()  # 👈 THIS  loads the .env file 
 import uuid
 from celery.result import AsyncResult
 app = FastAPI()
@@ -54,8 +58,7 @@ async def create_upload_file(
         "task_id": task.id
     }
 from celery import Celery
-
-REDIS_URL = "rediss://default:gQAAAAAAAV2HAAIncDFmYzdkOGVhYjYyMDM0YzdjOWU0MWQ5NzZlOTUxY2IwZHAxODk0Nzk@ample-walrus-89479.upstash.io:6379"
+REDIS_URL = os.getenv("REDIS_URL")
 
 celery = Celery(
     __name__,
@@ -102,12 +105,27 @@ def process_csv_file(self, file_path):
                     print(f"skipping row {row} because of {e}")
 
                 
+            
                 if len(batch) >= batch_size:
-                    db.add_all(batch)
-                    db.commit()
+                    try:
+                        db.add_all(batch)
+                        db.commit()
 
-                    inserted += len(batch)
-                    batch.clear()
+                        inserted += len(batch)
+                        batch.clear()
+                    
+                    except IntegrityError:
+                        db.rollback()
+                        for product in batch:
+                            try:
+                                db.add(product)
+                                db.commit()
+                                inserted+=1
+                            except IntegrityError:
+                                db.rollback()
+                                print(f"skipping product {product.sku} because of integrity error")
+                            finally:
+                                batch.clear()
 
                 
                 if i % 1000 == 0 or i == total - 1:
@@ -125,9 +143,14 @@ def process_csv_file(self, file_path):
 
         
         if batch:
-            db.add_all(batch)
-            db.commit()
-            inserted += len(batch)
+            for product in batch:
+                try:
+                    db.add(product)
+                    db.commit()
+                    inserted += 1
+                except IntegrityError:
+                    db.rollback()
+                    print(f"skipping remaining batch because of integrity error")
 
             self.update_state(
                 state="PROGRESS",
@@ -137,7 +160,7 @@ def process_csv_file(self, file_path):
                     "total": total,
                     "percent": 99
                 },
-            )
+                )
 
     # ✅ DONE
     return {

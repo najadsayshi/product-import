@@ -1,8 +1,10 @@
-from sqlmodel import SQLModel,Field
+from sqlmodel import SQLModel,Field, UniqueConstraint
 from typing import Optional
 from datetime import datetime
 
 class Product(SQLModel, table=True):
+
+    __table_args__ = (UniqueConstraint("sku"),)
     id : Optional[int] = Field(default=None,primary_key=True)
     sku : str = Field(index=True,unique=True)
     name : str
