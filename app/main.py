@@ -11,6 +11,8 @@ import uuid
 from celery.result import AsyncResult
 app = FastAPI()
 from fastapi.middleware.cors import CORSMiddleware
+from app.router import crud
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -167,3 +169,8 @@ def get_progress(task_id: str):
         }
     
     return {"state" : task.state}
+
+
+#crud
+
+app.include_router(crud.router)
