@@ -6,3 +6,10 @@ class ProductCreate(BaseModel):
     sku: str
     description: str
     price: float
+
+
+class ProductUpdate(BaseModel):
+    name : str
+    description : str
+    price : float
+

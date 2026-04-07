@@ -134,7 +134,7 @@ def process_csv_file(self, file_path):
                     self.update_state(
                         state="PROGRESS",
                         meta={
-                            "stage": "processing",
+                            "stage": "Parsing Csv",
                             "current": inserted,
                             "total": total,
                             "percent": percent
@@ -155,7 +155,7 @@ def process_csv_file(self, file_path):
             self.update_state(
                 state="PROGRESS",
                 meta={
-                    "stage": "finalizing",
+                    "stage": "Validating",
                     "current": inserted,
                     "total": total,
                     "percent": 99
@@ -164,7 +164,7 @@ def process_csv_file(self, file_path):
 
     # ✅ DONE
     return {
-        "stage": "completed",
+        "stage": "Import Completed",
         "inserted": inserted,
         "percent": 100
     }
